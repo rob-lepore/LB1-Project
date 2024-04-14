@@ -1,0 +1,110 @@
+#!/bin/bash
+
+usage() {
+    echo "Usage: $0 --pfam <pfam_id> --min-length <min_length> --max-length <max_length> --clust-th <similarity_threshold> --hmm-name <hmm_name>"
+    echo "Options:"
+    echo "  --pfam <pfam_id>: Specify the PFAM ID"
+    echo "  --min-length <min_length>: Specify the minimum length (default 0)"
+    echo "  --max-length <max_length>: Specify the maximum length (default 1000)"
+    echo "  --clust-th <similarity_threshold>: Specify the similarity cutoff for clustering (default 100)" 
+    echo "  --hmm-name <hmm_name> (default model)"
+    exit 1
+}
+
+# Default values
+pfam_id="PF00014"
+min_length=0
+max_length=1000
+clust_th=100
+hmm_name="model"
+
+if [[ $# -eq 0 ]]
+then
+    usage
+    exit 1
+fi
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --pfam )
+            pfam_id="$2"
+            shift 2
+            ;;
+        --min-length )
+            min_length="$2"
+            shift 2
+            ;;
+        --max-length )
+            max_length="$2"
+            shift 2
+            ;;
+        --clust-th )
+            clust_th="$2"
+            shift 2
+            ;;
+        --hmm-name )
+            hmm_name="$2"
+            shift 2
+            ;;
+        *)
+            echo "Invalid option: $1" 1>&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [[ -z $pfam_id ]]; then
+    echo "Error: --pfam option is required."
+    usage
+fi
+
+printf "\n# Running with options:\n"
+echo "#     PFAM ID: $pfam_id"
+echo "#     Minimum length: $min_length"
+echo "#     Maximum length: $max_length"
+echo "#     Clustering threshold: $clust_th"
+echo "#     HMM file name: $hmm_name"
+echo "#"
+
+
+
+
+./clean.sh
+
+# Get PDB IDs 
+printf "\n\nQuerying structures... "
+python3 get_structures.py $pfam_id $min_length $max_length $clust_th
+
+# Download PDB files
+printf "\nDownloading PDB files...\n"
+python3 download_pdbs.py &
+# Progress bar 
+tot_files=`wc -l pdb_query.ids | cut -d \  -f 1`
+n_files=0
+while [ $n_files -lt $tot_files ]
+do
+    n_files=`ls pdb_files/ | awk '{gsub(/ /, "\n"); print}' | wc -l | cut -d \  -f 1`
+    n_files=$(( $n_files / 2 ))
+    perc=$(( 100 * $n_files / tot_files ))
+    printf "$perc%% \r"
+done
+
+rm pdb_files/*_temp.pdb
+echo `ls pdb_files/` | awk '{gsub(/ /, "\n"); print}' > list
+printf "PDB files in pdb_files/ directory\n"
+
+# USalign multiple structure alignment
+printf "\nExecuting multiple structure alignment... "
+./USalign/USalign -dir pdb_files/ list -mm 4 -outfmt 1 > ./alignments/msa_temp.fasta
+grep -v "^[#$]" alignments/msa_temp.fasta | awk '{if (substr($0,1,1)==">") {print "\n"$1} else { printf "%s",$1 } }' | grep "." > alignments/msa.fasta
+rm alignments/msa_temp.fasta
+rm list
+aln_length=`cat alignments/msa.fasta | awk 'NR==2 { print length($0); }'`
+printf "Alignment length: $aln_length\n"
+
+# HMMER model build
+printf "\nBuilding HMM... "
+hmmbuild -o hmm/hmmbuild.log -n $hmm_name hmm/$hmm_name.hmm alignments/msa.fasta
+hmm_length=`grep "^LENG" hmm/$hmm_name.hmm | awk '{print $NF}'`
+printf "Model length: $hmm_length\n"
