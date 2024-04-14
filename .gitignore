@@ -1,3 +1,4 @@
-./hmm/*
-./alignments/*
-./pdb_files/*
+hmm/*
+alignments/*
+pdb_files/*
+pdb_query.ids
