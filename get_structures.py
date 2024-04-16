@@ -55,12 +55,9 @@ if __name__ == "__main__":
     j = r.json()
 
     entities = []
-    unique_pdbids=set()
     for entity in j["data"]["polymer_entities"]:
         # PDB ID
         pdb_id = entity["rcsb_polymer_entity_container_identifiers"]["entry_id"]
-        if pdb_id in unique_pdbids: continue
-        unique_pdbids.add(pdb_id)
         # Chain ID
         chain_id = entity["polymer_entity_instances"][0]["rcsb_polymer_entity_instance_container_identifiers"]['auth_asym_id']
         # Sequence
