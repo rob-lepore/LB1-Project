@@ -1,6 +1,7 @@
 #!/bin/bash
 
 printf "\nMatching HMM against positive/negative train/test sets... "
+mkdir -p results
 hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/positives_1.out hmm/$1.hmm sets/positives_1.fasta > /dev/null
 hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/negatives_1.out hmm/$1.hmm sets/negatives_1.fasta > /dev/null
 hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/positives_2.out hmm/$1.hmm sets/positives_2.fasta > /dev/null
@@ -22,4 +23,7 @@ grep -v "#" results/positives_1.out | awk '{print $1"\t"$8"\t1"}' >> results/tra
 cat results/tmp_negatives_2.txt > results/test_set.txt
 grep -v "#" results/positives_1.out | awk '{print $1"\t"$8"\t1"}' >> results/test_set.txt
 
+shopt -q -s extglob
+rm results/!(*_set.txt)
+shopt -q -u extglob
 printf "Done\n"
