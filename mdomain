@@ -122,11 +122,11 @@ hmm_length=`grep "^LENG" hmm/$hmm_name.hmm | awk '{print $NF}'`
 printf "Model length: $hmm_length\n"
 
 # Get positive set with UniProt API
-printf "Downloading positive set... "
+printf "Downloading positive set... \n"
 mkdir -p sets
-curl -s "https://rest.uniprot.org/uniprotkb/search?compressed=true&format=fasta&query=%28%28reviewed%3Atrue%29+AND+%28xref%3Apfam-$pfam_id%29%29&size=500" --output sets/all_positives.fasta.gz
+curl  "https://rest.uniprot.org/uniprotkb/stream?compressed=true&format=fasta&query=%28%28reviewed%3Atrue%29+AND+%28xref%3Apfam-$pfam_id%29%29" --output sets/all_positives.fasta.gz
 gunzip sets/all_positives.fasta.gz
-printf "Done\n"
+printf "\nDone\n"
 # Get negative set with UniProt API
 printf "Downloading negative set... \n"
 curl "https://rest.uniprot.org/uniprotkb/stream?compressed=true&format=fasta&query=%28%28reviewed%3Atrue%29+NOT+%28xref%3Apfam-$pfam_id%29%29" --output sets/all_negatives.fasta.gz
@@ -153,8 +153,8 @@ cat sets/selected.ids | sort -R > sets/random_selected.ids
 printf "Positives in train set: $size_p1 - Positives in test set: $size_p2\n"
 head -n $size_p1 sets/random_selected.ids > sets/positives_1.ids           # change size!
 tail -n $size_p2 sets/random_selected.ids > sets/positives_2.ids
-python3 remove_entries.py sets/positives_2.ids sets/all_positives.fasta sets/positives_1.fasta
-python3 remove_entries.py sets/positives_1.ids sets/all_positives.fasta sets/positives_2.fasta
+python3 remove_entries.py sets/positives_2.ids sets/selected.fasta sets/positives_1.fasta
+python3 remove_entries.py sets/positives_1.ids sets/selected.fasta sets/positives_2.fasta
 printf "Done\n"
 
 printf "\nCreating negative train and test sets...\n"
@@ -171,7 +171,3 @@ python3 remove_entries.py sets/negatives_1.ids <(zcat sets/all_negatives.fasta.g
 printf "Done\n"
 
 ./match.sh $hmm_name
-
-
-
-

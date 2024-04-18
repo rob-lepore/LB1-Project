@@ -21,7 +21,7 @@ comm -23 <(sort sets/negatives_2.ids) <(cut -f 1 results/tmp_negatives_2.txt | s
 cat results/tmp_negatives_1.txt > results/train_set.txt
 grep -v "#" results/positives_1.out | awk '{print $1"\t"$8"\t1"}' >> results/train_set.txt
 cat results/tmp_negatives_2.txt > results/test_set.txt
-grep -v "#" results/positives_1.out | awk '{print $1"\t"$8"\t1"}' >> results/test_set.txt
+grep -v "#" results/positives_2.out | awk '{print $1"\t"$8"\t1"}' >> results/test_set.txt
 
 shopt -q -s extglob
 rm results/!(*_set.txt)
