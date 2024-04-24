@@ -12,6 +12,8 @@ if __name__ == "__main__":
     with open("pdb_query.json") as queryfile:
         query = queryfile.read()
     query = query.replace("PFAM-ID", pfam)
+    query = query.replace("CATH-ID", "4.10.410.10")
+    query = query.replace("IP-ID", "IPR002223")
     query = query.replace('"MINLEN"', minl)
     query = query.replace('"MAXLEN"', maxl)
     query = query.replace('"SIMCUT"', cth)

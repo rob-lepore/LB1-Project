@@ -77,97 +77,18 @@ echo "#     HMM file name: $hmm_name"
 echo "#"
 
 
-
-
 ./clean.sh
 
-# Get PDB IDs 
-printf "\n\nQuerying structures... "
-python3 get_structures.py $pfam_id $min_length $max_length $clust_th
+./msta.sh $pfam_id $min_length $max_length $clust_th
 
-# Download PDB files
-printf "\nDownloading PDB files...\n"
-mkdir -p pdb_files
-python3 download_pdbs.py &
-# Progress bar 
-tot_files=`wc -l pdb_query.ids | cut -d \  -f 1`
-n_files=0
-while [ $n_files -lt $tot_files ]
-do
-    n_files=`ls pdb_files/ | awk '{gsub(/ /, "\n"); print}' | wc -l | cut -d \  -f 1`
-    n_files=$(( $n_files / 2 ))
-    perc=$(( 100 * $n_files / tot_files ))
-    printf "...$perc%% \r"
-done
+./hmm_build.sh $hmm_name
 
-rm pdb_files/*_temp.pdb
-echo `ls pdb_files/` | awk '{gsub(/ /, "\n"); print}' > list
-printf "PDB files in pdb_files/ directory\n"
+./get_sets.sh $pfam_id
 
-# USalign multiple structure alignment
-printf "\nExecuting multiple structure alignment... "
-mkdir -p alignments
-./USalign/USalign -dir pdb_files/ list -mm 4 -outfmt 1 > ./alignments/msa_temp.fasta
-grep -v "^[#$]" alignments/msa_temp.fasta | awk '{if (substr($0,1,1)==">") {print "\n"$1} else { printf "%s",$1 } }' | grep "." > alignments/msa.fasta
-rm alignments/msa_temp.fasta
-rm list
-aln_length=`cat alignments/msa.fasta | awk 'NR==2 { print length($0); }'`
-printf "Alignment length: $aln_length\n"
-
-# HMMER model build
-printf "\nBuilding HMM... "
-mkdir -p hmm
-hmmbuild -o hmm/hmmbuild.log -n $hmm_name hmm/$hmm_name.hmm alignments/msa.fasta
-hmm_length=`grep "^LENG" hmm/$hmm_name.hmm | awk '{print $NF}'`
-printf "Model length: $hmm_length\n"
-
-# Get positive set with UniProt API
-printf "Downloading positive set... \n"
-mkdir -p sets
-curl  "https://rest.uniprot.org/uniprotkb/stream?compressed=true&format=fasta&query=%28%28reviewed%3Atrue%29+AND+%28xref%3Apfam-$pfam_id%29%29" --output sets/all_positives.fasta.gz
-gunzip sets/all_positives.fasta.gz
-printf "\nDone\n"
-# Get negative set with UniProt API
-printf "Downloading negative set... \n"
-curl "https://rest.uniprot.org/uniprotkb/stream?compressed=true&format=fasta&query=%28%28reviewed%3Atrue%29+NOT+%28xref%3Apfam-$pfam_id%29%29" --output sets/all_negatives.fasta.gz
-printf "\nDone\n"
-
-# Get UniProt IDs of the structures used in the training
-L=`cat pdb_query.ids`
-ids=`echo $L | awk '{gsub(" ", ","); print}'`
-./id_mapping.sh $ids
-
-# Remove the sequences from the positive set
-python3 remove_entries.py sets/to_remove.ids sets/all_positives.fasta sets/selected.fasta
-grep ">" sets/selected.fasta | tr -d ">" | cut -d " " -f 1 > sets/selected.ids
-final_size=`grep ">" ./sets/selected.fasta |wc -l`
-printf "Selected positive set size: $final_size\n"
-
-# Separate sets in 2 subsets (train and test)
-scale=2
-
-printf "\nCreating positive train and test sets...\n"
-size_p1=$(( final_size / scale ))
-size_p2=$(( final_size - size_p1 ))
-cat sets/selected.ids | sort -R > sets/random_selected.ids
-printf "Positives in train set: $size_p1 - Positives in test set: $size_p2\n"
-head -n $size_p1 sets/random_selected.ids > sets/positives_1.ids           # change size!
-tail -n $size_p2 sets/random_selected.ids > sets/positives_2.ids
-python3 remove_entries.py sets/positives_2.ids sets/selected.fasta sets/positives_1.fasta
-python3 remove_entries.py sets/positives_1.ids sets/selected.fasta sets/positives_2.fasta
-printf "Done\n"
-
-printf "\nCreating negative train and test sets...\n"
-zgrep ">" sets/all_negatives.fasta.gz | tr -d ">" | cut -d " " -f 1 > sets/all_negatives.ids
-n_neg=`cat sets/all_negatives.ids | wc -l`
-size_n1=$(( n_neg / scale ))
-size_n2=$(( n_neg - size_n1 ))
-printf "Negatives in train set: $size_n1 - Negatives in test set: $size_n2\n"
-cat sets/all_negatives.ids | sort -R > sets/random_negatives.ids
-head -n $size_n1 sets/random_negatives.ids > sets/negatives_1.ids
-tail -n $size_n2 sets/random_negatives.ids > sets/negatives_2.ids
-python3 remove_entries.py sets/negatives_2.ids <(zcat sets/all_negatives.fasta.gz) sets/negatives_1.fasta
-python3 remove_entries.py sets/negatives_1.ids <(zcat sets/all_negatives.fasta.gz) sets/negatives_2.fasta
-printf "Done\n"
+./split_train_test.sh 
 
 ./match.sh $hmm_name
+
+#./cross_validation.sh 
+
+./evaluate.sh
