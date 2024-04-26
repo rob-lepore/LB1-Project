@@ -2,26 +2,26 @@
 
 printf "\nMatching HMM against positive/negative train/test sets... "
 mkdir -p results
-hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/positives_1.out hmm/$1.hmm sets/positives_1.fasta > /dev/null
-hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/negatives_1.out hmm/$1.hmm sets/negatives_1.fasta > /dev/null
-hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/positives_2.out hmm/$1.hmm sets/positives_2.fasta > /dev/null
-hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/negatives_2.out hmm/$1.hmm sets/negatives_2.fasta > /dev/null
+hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/positives_train.out hmm/$1.hmm sets/positives_train.fasta > /dev/null
+hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/negatives_train.out hmm/$1.hmm sets/negatives_train.fasta > /dev/null
+hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/positives_test.out hmm/$1.hmm sets/positives_test.fasta > /dev/null
+hmmsearch --max --noali -Z 1 --domZ 1 --tblout results/negatives_test.out hmm/$1.hmm sets/negatives_test.fasta > /dev/null
 printf "Done\n"
 
 printf "\nBuilding train and test sets with E-value and labels... "
 # Negatives train set
-grep -v "#" results/negatives_1.out | awk '{print $1"\t"$8"\t0"}' > results/tmp_negatives_1.txt
-comm -23 <(sort sets/negatives_1.ids) <(cut -f 1 results/tmp_negatives_1.txt | sort)  | awk '{print $1"\t10\t0"}' >> results/tmp_negatives_1.txt
+grep -v "#" results/negatives_train.out | awk '{print $1"\t"$8"\t0"}' > results/tmp_negatives_train.txt
+comm -23 <(sort sets/negatives_train.ids) <(cut -f 1 results/tmp_negatives_train.txt | sort)  | awk '{print $1"\t10\t0"}' >> results/tmp_negatives_train.txt
 
 # Negatives test set
-grep -v "#" results/negatives_2.out | awk '{print $1"\t"$8"\t0"}' > results/tmp_negatives_2.txt
-comm -23 <(sort sets/negatives_2.ids) <(cut -f 1 results/tmp_negatives_2.txt | sort)  | awk '{print $1"\t10\t0"}' >> results/tmp_negatives_2.txt
+grep -v "#" results/negatives_test.out | awk '{print $1"\t"$8"\t0"}' > results/tmp_negatives_test.txt
+comm -23 <(sort sets/negatives_test.ids) <(cut -f 1 results/tmp_negatives_test.txt | sort)  | awk '{print $1"\t10\t0"}' >> results/tmp_negatives_test.txt
 
 # Add positives to sets
-cat results/tmp_negatives_1.txt > results/train_set.txt
-grep -v "#" results/positives_1.out | awk '{print $1"\t"$8"\t1"}' >> results/train_set.txt
-cat results/tmp_negatives_2.txt > results/test_set.txt
-grep -v "#" results/positives_2.out | awk '{print $1"\t"$8"\t1"}' >> results/test_set.txt
+cat results/tmp_negatives_train.txt > results/train_set.txt
+grep -v "#" results/positives_train.out | awk '{print $1"\t"$8"\t1"}' >> results/train_set.txt
+cat results/tmp_negatives_test.txt > results/test_set.txt
+grep -v "#" results/positives_test.out | awk '{print $1"\t"$8"\t1"}' >> results/test_set.txt
 
 shopt -q -s extglob
 rm results/!(*_set.txt)

@@ -34,4 +34,4 @@ if __name__ == "__main__":
     CM = get_CM(filename, th)
     #print(CM)
     p = MCC(CM)
-    print("e-value: ",th, " - MCC: ", p)
+    print(f"{th} {p}")

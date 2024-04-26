@@ -20,4 +20,6 @@ python3 remove_entries.py sets/to_remove.ids sets/all_positives.fasta sets/selec
 grep ">" sets/selected.fasta | tr -d ">" | cut -d " " -f 1 > sets/selected.ids
 final_size=`grep ">" ./sets/selected.fasta |wc -l`
 printf "Selected positive set size: $final_size\n"
+n_neg=`zgrep ">" sets/all_negatives.fasta.gz | wc -l`
+print "Negative set size: $n_neg"
 

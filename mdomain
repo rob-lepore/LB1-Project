@@ -89,6 +89,6 @@ echo "#"
 
 ./match.sh $hmm_name
 
-#./cross_validation.sh 
+./cross_validation.sh 
 
-./evaluate.sh
+#./evaluate.sh
