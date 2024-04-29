@@ -1,11 +1,11 @@
 # Get PDB IDs 
 printf "\n\nQuerying structures... "
-python3 get_structures.py $1 $2 $3 $4
+python3 scripts/get_structures.py $1 $2 $3 $4 $5 $6
 
 # Download PDB files
 printf "\nDownloading PDB files...\n"
 mkdir -p pdb_files
-python3 download_pdbs.py &
+python3 scripts/download_pdbs.py &
 # Progress bar 
 tot_files=`wc -l pdb_query.ids | cut -d \  -f 1`
 n_files=0

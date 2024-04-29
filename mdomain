@@ -1,11 +1,13 @@
 #!/bin/bash
 
 usage() {
-    echo "Usage: $0 -h --pfam <pfam_id> --min-length <min_length> --max-length <max_length> --clust-th <similarity_threshold> --hmm-name <hmm_name>"
+    echo "Usage: $0 [options]"
     echo ""
     echo "Options:"
     echo "  -h: show the usage message"
-    echo "  --pfam <pfam_id>: Specify the PFAM ID"
+    echo "  --pfam <pfam_id>: Specify the PFAM ID (required)"
+    echo "  --cath <cath_id>: Specify the CATH ID (required)"
+    echo "  --ip <ip_id>: Specify the Interpro ID (required)"
     echo "  --min-length <min_length>: Specify the minimum length (default 0)"
     echo "  --max-length <max_length>: Specify the maximum length (default 1000)"
     echo "  --clust-th <similarity_threshold>: Specify the similarity cutoff for clustering (default 100)" 
@@ -16,6 +18,8 @@ usage() {
 
 # Default values
 pfam_id=""
+cath_id=""
+ip_id=""
 min_length=0
 max_length=1000
 clust_th=100
@@ -35,6 +39,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --pfam )
             pfam_id="$2"
+            shift 2
+            ;;
+        --cath )
+            cath_id="$2"
+            shift 2
+            ;;
+        --ip )
+            ip_id="$2"
             shift 2
             ;;
         --min-length )
@@ -70,6 +82,8 @@ fi
 
 printf "\n# Running with options:\n"
 echo "#     PFAM ID: $pfam_id"
+echo "#     CATH ID: $cath_id"
+echo "#     Interpro ID: $ip_id"
 echo "#     Minimum length: $min_length"
 echo "#     Maximum length: $max_length"
 echo "#     Clustering threshold: $clust_th"
@@ -79,11 +93,11 @@ echo "#"
 
 ./clean.sh
 
-./msta.sh $pfam_id $min_length $max_length $clust_th
+./msta.sh $pfam_id $cath_id $ip_id $min_length $max_length $clust_th
 
 ./hmm_build.sh $hmm_name
 
-./get_sets.sh $pfam_id
+./get_sets.sh $pfam_id $cath_id $ip_id
 
 ./split_train_test.sh 
 
@@ -91,4 +105,4 @@ echo "#"
 
 ./cross_validation.sh 
 
-#./evaluate.sh
+./evaluate.sh

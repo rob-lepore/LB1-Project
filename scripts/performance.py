@@ -15,6 +15,10 @@ def get_CM(file, th):
     CM["pred_pos"]["actu_neg"] = ((df["pred"] == 1) & (df["real"] == 0)).sum()
     CM["pred_neg"]["actu_neg"] = ((df["pred"] == 0) & (df["real"] == 0)).sum()
 
+
+    print("False negatives:\n",df_in[(df["pred"] == 0) & (df["real"] == 1)], file=open("results/wrong_predictions.txt", "w"))
+    print("\nFalse positives:\n",df_in[(df["pred"] == 1) & (df["real"] == 0)], file=open("results/wrong_predictions.txt", "a"))
+    
     return CM
 
 def get_values(CM):
@@ -28,10 +32,14 @@ def F1_score(CM):
     TP, FP, TN, FN = get_values(CM)
     return 2*TP / (2*TP + FP + FN)
 
+def recall(CM):
+    TP, FP, TN, FN = get_values(CM)
+    return TP / (TP+FN)
+
 if __name__ == "__main__":
     filename = sys.argv[1]
     th = float(sys.argv[2])
     CM = get_CM(filename, th)
-    #print(CM)
-    p = MCC(CM)
+    print("\n\nConfusion matrix:\n",CM, file=open("results/wrong_predictions.txt", "a"))
+    p = F1_score(CM)
     print(f"{th} {p}")

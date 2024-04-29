@@ -3,17 +3,19 @@ import sys
 
 if __name__ == "__main__":
     pfam = sys.argv[1]
-    minl = sys.argv[2]
-    maxl = sys.argv[3]
-    cth = sys.argv[4]
+    cath = sys.argv[2]
+    interpro = sys.argv[3]
+    minl = sys.argv[4]
+    maxl = sys.argv[5]
+    cth = sys.argv[6]
     #print(pfam, minl, maxl, cth)
 
     query = ""
     with open("pdb_query.json") as queryfile:
         query = queryfile.read()
     query = query.replace("PFAM-ID", pfam)
-    query = query.replace("CATH-ID", "4.10.410.10")
-    query = query.replace("IP-ID", "IPR002223")
+    query = query.replace("CATH-ID", cath)
+    query = query.replace("IP-ID", interpro)
     query = query.replace('"MINLEN"', minl)
     query = query.replace('"MAXLEN"', maxl)
     query = query.replace('"SIMCUT"', cth)

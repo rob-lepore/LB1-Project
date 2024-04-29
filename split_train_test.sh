@@ -9,8 +9,8 @@ cat sets/selected.ids | sort -R > sets/random_selected.ids
 printf "Positives in train set: $size_p1 - Positives in test set: $size_p2\n"
 head -n $size_p1 sets/random_selected.ids > sets/positives_train.ids
 tail -n $size_p2 sets/random_selected.ids > sets/positives_test.ids
-python3 remove_entries.py sets/positives_test.ids sets/selected.fasta sets/positives_train.fasta
-python3 remove_entries.py sets/positives_train.ids sets/selected.fasta sets/positives_test.fasta
+python3 scripts/remove_entries.py sets/positives_test.ids sets/selected.fasta sets/positives_train.fasta
+python3 scripts/remove_entries.py sets/positives_train.ids sets/selected.fasta sets/positives_test.fasta
 printf "Done\n"
 
 printf "\nCreating negative train and test sets...\n"
@@ -22,6 +22,6 @@ printf "Negatives in train set: $size_n1 - Negatives in test set: $size_n2\n"
 cat sets/all_negatives.ids | sort -R > sets/random_negatives.ids
 head -n $size_n1 sets/random_negatives.ids > sets/negatives_train.ids
 tail -n $size_n2 sets/random_negatives.ids > sets/negatives_test.ids
-python3 remove_entries.py sets/negatives_test.ids <(zcat sets/all_negatives.fasta.gz) sets/negatives_train.fasta
-python3 remove_entries.py sets/negatives_train.ids <(zcat sets/all_negatives.fasta.gz) sets/negatives_test.fasta
+python3 scripts/remove_entries.py sets/negatives_test.ids <(zcat sets/all_negatives.fasta.gz) sets/negatives_train.fasta
+python3 scripts/remove_entries.py sets/negatives_train.ids <(zcat sets/all_negatives.fasta.gz) sets/negatives_test.fasta
 printf "Done\n"

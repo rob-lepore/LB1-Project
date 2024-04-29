@@ -1,7 +1,7 @@
 import sys
 
 def create_fold(rows, number):
-    with open(f"results/fold-{number}.txt", "w") as file:
+    with open(f"sets/fold-{number}.txt", "w") as file:
         file.write("\n".join(rows))
 
 
