@@ -41,5 +41,5 @@ if __name__ == "__main__":
     th = float(sys.argv[2])
     CM = get_CM(filename, th)
     print("\n\nConfusion matrix:\n",CM, file=open("results/wrong_predictions.txt", "a"))
-    p = F1_score(CM)
+    p = MCC(CM)
     print(f"{th} {p}")
