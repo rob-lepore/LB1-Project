@@ -28,6 +28,7 @@ if __name__ == "__main__":
     for result in j["result_set"]:
         ids.append(result["identifier"])
     ids = str(ids).replace(" ","").replace("'",'"')
+    #print(ids)
 
     graph_query = """
         {
@@ -57,6 +58,8 @@ if __name__ == "__main__":
 
     r = requests.get('https://data.rcsb.org/graphql?query=%s' % requests.utils.requote_uri(graph_query))
     j = r.json()
+    
+    fixes = {i.split(";")[0]: i.split(";")[1] for i in open("fix_entries.txt").read().rstrip().split("\n")}
 
     entities = []
     for entity in j["data"]["polymer_entities"]:
@@ -66,6 +69,10 @@ if __name__ == "__main__":
         chain_id = entity["polymer_entity_instances"][0]["rcsb_polymer_entity_instance_container_identifiers"]['auth_asym_id']
         # Sequence
         seq = entity["entity_poly"]['pdbx_seq_one_letter_code_can']
+
+        if pdb_id in fixes:
+            if fixes[pdb_id] == "0": continue
+            chain_id = fixes[pdb_id]
         entities.append((pdb_id, chain_id, seq))
 
     with open("pdb_query.ids", "w") as file:
