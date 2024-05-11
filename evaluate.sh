@@ -3,7 +3,7 @@ mkdir results
 printf "" > "results/th_performances.txt"
 for n in {1..5}
 do
-    th=`for i in 3.0e-7 1.0e-7 3.0e-8 1.0e-8 3.0e-9 1.0e-9 3.0e-10 1.0e-10 3e-11 1e-11; do python3 scripts/performance.py sets/fold-$n-train.txt $i; done | sort -rk 2 | head -n 1 | cut -d " " -f 1`
+    th=`for i in 5.0e-7 3.0e-7 1.0e-7 5.0e-8 3.0e-8 1.0e-8 5.0e-9 3.0e-9 1.0e-9 5.0e-10 3.0e-10 1.0e-10 5.0e-11 3e-11 1e-11; do python3 scripts/performance.py sets/fold-$n-train.txt $i; done | sort -rk 2 | head -n 1 | cut -d " " -f 1`
     python3 scripts/performance.py sets/fold-$n.txt $th >> "results/th_performances.txt"
 done
 printf "Done\n"
