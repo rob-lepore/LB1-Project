@@ -1,7 +1,7 @@
 # LB1 project
 
 ```sh
-./mdomain --pfam PF00014 --cath "4.10.410.10" --ip IPR002223 --min-length 50 --max-length 80 --clust-th 50 --hmm-name kunitz
+./mdomain --pfam PF00014 --cath "4.10.410.10" --ip IPR002223 --min-length 50 --max-length 80 --clust-th 70 --hmm-name kunitz
 ```
 
 ## Flow
