@@ -3,11 +3,11 @@ import numpy as np
 import sys
 
 def get_CM(file, th):
-    df_in = pd.read_csv(file,sep="\t", names=["ID","E-value", "kunitz"])
+    df_in = pd.read_csv(file,sep="\t", names=["ID","E-value", "label"])
 
     df = pd.DataFrame()
     df["pred"] = df_in["E-value"].map(lambda a: 1 if a < th else 0)
-    df["real"] = df_in["kunitz"]
+    df["real"] = df_in["label"]
     CM = pd.DataFrame(np.zeros((2,2), dtype=int), columns=["pred_pos", "pred_neg"], index=["actu_pos", "actu_neg"])
 
     CM["pred_pos"]["actu_pos"] = ((df["pred"] == 1) & (df["real"] == 1)).sum()
